@@ -8,7 +8,8 @@ from fastapi import Header, Request
 from fastapi.responses import StreamingResponse
 from loguru import logger
 from schema import Summary
-from segment import group_speech_segments, shorten_summary_to_md, summary_segments_to_md
+from segment import (group_speech_segments, shorten_summary_to_md,
+                     summary_segments_to_md)
 from sqlalchemy.orm import Session
 from sse_starlette import EventSourceResponse
 from transcribe import transcribe_youtube
