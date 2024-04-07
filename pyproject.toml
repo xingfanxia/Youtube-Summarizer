@@ -10,7 +10,7 @@ packages = [{include = "video_summary_streamer"}]
 python = "^3.9"
 loguru = "^0.6.0"
 fastapi = "^0.90.1"
-openai = "^0.26.5"
+openai = "1.16.2"
 youtube-transcript-api = "^0.5.0"
 sse-starlette = "^1.2.1"
 uvicorn = "^0.20.0"

@@ -1,7 +1,10 @@
 import asyncio
+import os
 from typing import AsyncGenerator, Optional
 
-import openai
+from openai import AsyncOpenAI
+
+aclient = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 PROMPT = """
 Summarize the transcript in a clear and concise manner that makes use of timestamps, when available, to help others study the transcript. Chapters should be meaningful length and not too short. Respond in the same language as the transcript if it is not english.
@@ -44,42 +47,38 @@ async def summarize_transcript(
     language: str = "en",
     semaphore: Optional[asyncio.Semaphore] = None,
 ):
-    if openai_api_key is not None:
-        openai.api_key = openai_api_key
 
     async def call() -> AsyncGenerator[str, None]:
-        response = await openai.ChatCompletion.acreate(
-            model="gpt-3.5-turbo-16k",
-            messages=[
-                {
-                    "role": "system",
-                    "content": f"You are professional note taker tasked with creating a comprehensive and informative markdown file from a given transcript. Your markdown file should be structured in a clear and concise manner that makes use of timestamps, when available, to help others study the transcript. Notes should be in language code is `{language}` and should be written in markdown format.",
-                },
-                {
-                    "role": "user",
-                    "content": f"I have added a feature that forces you to response only in `locale={language}` and markdown format while creating the notes.",
-                },
-                {
-                    "role": "assistant",
-                    "content": f"Understood thank you.From now I will only response with `locale={language}`",
-                },
-                {
-                    "role": "user",
-                    "content": txt,
-                },
-                {"role": "user", "content": PROMPT},
-            ],
-            stream=True,
-            max_tokens=500,
-            temperature=0,
-            top_p=1,
-            frequency_penalty=0.6,
-            presence_penalty=0.6,
-        )
+        response = await aclient.chat.completions.create(model="gpt-3.5-turbo-16k",
+        messages=[
+            {
+                "role": "system",
+                "content": f"You are professional note taker tasked with creating a comprehensive and informative markdown file from a given transcript. Your markdown file should be structured in a clear and concise manner that makes use of timestamps, when available, to help others study the transcript. Notes should be in language code is `{language}` and should be written in markdown format.",
+            },
+            {
+                "role": "user",
+                "content": f"I have added a feature that forces you to response only in `locale={language}` and markdown format while creating the notes.",
+            },
+            {
+                "role": "assistant",
+                "content": f"Understood thank you.From now I will only response with `locale={language}`",
+            },
+            {
+                "role": "user",
+                "content": txt,
+            },
+            {"role": "user", "content": PROMPT},
+        ],
+        stream=True,
+        max_tokens=500,
+        temperature=0,
+        top_p=1,
+        frequency_penalty=0.6,
+        presence_penalty=0.6)
 
         async def gen():
             async for chunk in response:  # type: ignore
-                yield chunk["choices"][0]["delta"].get("content", "")
+                yield chunk.choices[0].delta.content
             yield "\n\n"
 
         return gen()

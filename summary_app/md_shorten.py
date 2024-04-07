@@ -1,7 +1,10 @@
 import asyncio
+import os
 from typing import AsyncGenerator, Optional
 
-import openai
+from openai import AsyncOpenAI
+
+aclient = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 PROMPT = """
 You are a professional note taker tasked with shortening and organizing a study guide.
@@ -39,30 +42,26 @@ async def shorten_md(
     openai_api_key: Optional[str],
     semaphore: Optional[asyncio.Semaphore] = None,
 ):
-    if openai_api_key is not None:
-        openai.api_key = openai_api_key
 
     async def call() -> AsyncGenerator[str, None]:
-        response = await openai.ChatCompletion.acreate(
-            model="gpt-3.5-turbo-16k",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a professional note taker tasked with merging and shortening a study guide. Your markdown file should be structured in a clear and concise manner that makes use of timestamps, when available, to help others study.",
-                },
-                {"role": "user", "content": PROMPT.format(text=txt)},
-            ],
-            stream=True,
-            max_tokens=2000,
-            temperature=0,
-            top_p=1,
-            frequency_penalty=0,
-            presence_penalty=0.6,
-        )
+        response = await aclient.chat.completions.create(model="gpt-3.5-turbo-16k",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a professional note taker tasked with merging and shortening a study guide. Your markdown file should be structured in a clear and concise manner that makes use of timestamps, when available, to help others study.",
+            },
+            {"role": "user", "content": PROMPT.format(text=txt)},
+        ],
+        stream=True,
+        max_tokens=2000,
+        temperature=0,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0.6)
 
         async def gen():
             async for chunk in response:  # type: ignore
-                yield chunk["choices"][0]["delta"].get("content", "")
+                yield chunk.choices[0].delta.content
             yield "\n"
 
         return gen()
