@@ -17,6 +17,7 @@ uvicorn = "^0.20.0"
 pytube = "^12.1.2"
 whisper = "^1.1.10"
 openai-whisper = "^20230124"
+sqlalchemy = "^2.0.29"
 
 
 [tool.poetry.group.dev.dependencies]
