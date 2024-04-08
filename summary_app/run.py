@@ -128,8 +128,23 @@ async def shorten_summary(
 
 
 import fastapi
+from fastapi.middleware.cors import CORSMiddleware
 
 app = fastapi.FastAPI()
+
+allowed_origins = [
+    "http://localhost:3000",  # Example: Allow a local development frontend
+    "chrome-extension://oakpldlldjgedpfniadmkbahidcbjbek",  # Allow your specific Chrome extension
+]
+
+# Add CORSMiddleware to the application instance
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,  # Specify which origins are allowed
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 app.post("/youtube_markdown")(youtube_summary_md)
 app.post("/shorten_markdown")(shorten_summary)
