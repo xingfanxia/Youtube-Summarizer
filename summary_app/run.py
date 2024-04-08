@@ -134,7 +134,7 @@ app = fastapi.FastAPI()
 
 allowed_origins = [
     "http://localhost:3000",  # Example: Allow a local development frontend
-    "chrome-extension://oakpldlldjgedpfniadmkbahidcbjbek",  # Allow your specific Chrome extension
+    "*",  # Allow your specific Chrome extension
 ]
 
 # Add CORSMiddleware to the application instance
